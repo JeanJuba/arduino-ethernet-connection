@@ -73,8 +73,8 @@ void loop() {
     Serial.print( humidity, 1 );
     Serial.println( "%" );
 
-    //String values = "{\"latitude\":\"4\",\"longitude\":\"452\",\"temperature\":\"" + String(humidity) + "\"}";
-    String values = "{\"latitude\":\"4\",\"longitude\":\"452\",\"temperature\":\"" + String(temperature) + "\",\"humidity\":\"" + String(humidity) + "\"}";
+    //String values = "{\"id\":\"1\",\"latitude\":\"4\",\"longitude\":\"452\",\"temperature\":\"" + String(humidity) + "\"}";
+    String values = "{\"id\":\"1\",\"latitude\":\"4\",\"longitude\":\"452\",\"temperature\":\"" + String(temperature) + "\",\"humidity\":\"" + String(humidity) + "\"}";
 
     int str_len = values.length() + 1;
 
