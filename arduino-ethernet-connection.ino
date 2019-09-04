@@ -1,6 +1,8 @@
 #include <SPI.h>
 #include <Ethernet.h>
 #include <dht_nonblocking.h>
+#include <TinyGPS.h>
+#include <SoftwareSerial.h>
 
 #define TARGET_IP "192.168.0.200"
 #define TARGET_PORT 3000
@@ -16,13 +18,14 @@ byte subnet[] = { 255, 255, 255, 0 }; // Deixei isso para consultas no caso de v
 
 EthernetServer server(80);
 EthernetClient client;
+TinyGPS gps; // create gps object
 
 
 void setup()
 {
   Ethernet.begin(mac, ip);
   server.begin();
-  Serial.begin(9600); //Apenas para a saída para que possamos ver se o seu trabalho
+  Serial.begin(4800);
 }
 
 
@@ -51,6 +54,34 @@ static bool measure_environment( float *temperature, float *humidity )
 
 
 void loop() {
+  while (Serial.available()) {
+    int c = Serial.read();
+    gps.encode(c);
+  }
+
+  long latitude, longitude;
+  gps.get_position(&latitude, &longitude, NULL);
+  Serial.print("Latitude:  "); Serial.println(latitude);
+  Serial.print("Longitude:  "); Serial.println(longitude);
+
+  unsigned long chars;
+  unsigned short sentences, failed_checksum;
+  gps.stats(&chars, &sentences, &failed_checksum);
+
+  float flat, flon;
+    unsigned long age;
+    gps.f_get_position(&flat, &flon, &age);
+  Serial.print("LAT=");
+  Serial.print(flat == TinyGPS::GPS_INVALID_F_ANGLE ? 0.0 : flat, 6);
+  Serial.print(" LON=");
+  Serial.print(flon == TinyGPS::GPS_INVALID_F_ANGLE ? 0.0 : flon, 6);
+  Serial.print(" SAT=");
+  Serial.print(gps.satellites() == TinyGPS::GPS_INVALID_SATELLITES ? 0 : gps.satellites());
+  Serial.print(" PREC=");
+  Serial.print(gps.hdop() == TinyGPS::GPS_INVALID_HDOP ? 0 : gps.hdop());
+  Serial.println();
+  Serial.println();
+
 
   if (client.connect(TARGET_IP, TARGET_PORT))  {
 
@@ -64,7 +95,7 @@ void loop() {
        true, then a measurement is available. */
 
     while (measure_environment( &temperature, &humidity ) == false) {
-      Serial.println("Tentando...");
+      //Serial.println("Tentando...");
     }
 
     Serial.print( "T = " );
